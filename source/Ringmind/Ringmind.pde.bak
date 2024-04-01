@@ -1,0 +1,380 @@
+/**
+* RINGMIND 
+* A gravitational simulation in a Cartesian coordinate system.
+*
+* Physics Coding by Lancaster University Physics.
+* @author Thomas Cann
+* @author Sam Hinson
+* @author Chris Lawson
+* @author Chris Arridge
+*
+* Interaction design and audio visual system 
+* @author Ashley James Brown march-may 2019 
+*/
+
+
+import controlP5.*;
+import com.hamoid.*;
+
+ControlP5 cp5;
+ControlFrame cf;
+
+int videoExportTimerReset = 0;
+Boolean videoExportRecording = false;
+VideoExport videoExport;
+String videoExportFilename = "myVideo.mp4";
+
+Boolean Running= true;
+
+PImage bg;
+
+
+
+
+/**
+* Settings for this sketch.  Just sets up the screen.
+*/
+void settings() {
+
+  //fullScreen(P3D, 1);
+  size (1600, 800, P3D);
+
+  smooth();//this is anti-aliasing (3x is the default)  //noSmooth();
+}
+
+
+
+/**
+* Setup the sketch
+*/
+void setup() {
+
+  // Setup the CP5 interaction system.
+  setupCP5();
+
+  // Load a background image and resize to the dimensions of our display.  Then display.
+  bg = loadImage("Background.png");
+  bg.resize(1600,800);
+  background(bg);
+
+  // Seed the random number generator.
+  randomSeed(3);
+
+  // Setup the location of our drawing surface on the screen.
+  surface.setLocation(280,90);
+
+  // Initialise via the state system - set to initial state and then call setup for
+  // any initialisation.
+  systemState = State.initState;
+  setupStates();
+
+  // We default to being in the shear state - so set that state and initialise.
+  systemState = State.shearState;
+  setupStates();
+
+  // Setup video export.
+  if (videoExportRecording) setupExport();
+}
+
+
+
+/**
+* Sketch update/draw function.  Do any simulation updates and then render to the screen - or to video if
+* we are saving a movie.
+*/
+void draw() {
+  
+  // Simulation update.  updateCurrentState Calls the render and anything specific to each scene state.
+  //hint(ENABLE_DEPTH_TEST);  
+  updateCurrentState(millis());
+  //   scene.disableMotionAgent();
+   
+  /*
+  ** if we are exporting to video then we only save every 50 ms (at 20 fps)
+  ** to create a smoother looking video.
+  */
+  if (videoExportRecording) {
+    int timer = int(millis()) - videoExportTimerReset;
+    if(timer >= 50) {
+      videoExportTimerReset += 50;
+      drawMovie();
+    }
+  }
+}
+
+
+/* =========================================================================================================================
+*
+* CP5 Interaction code
+*
+* ==========================================================================================================================
+*/
+
+/**
+* Setup the CP5 controller
+*/
+void setupCP5(){
+  cf = new ControlFrame(this, 400, 800, "Controls");
+  surface.setLocation(420,10);
+  background(0);
+}
+
+
+
+/**
+* Respond to key down events.
+*/
+void keyPressed() {
+
+  switch(key) {
+
+    // Stop/start the simulation.
+    case ' ':
+      Running = !Running;
+      break;
+
+    // 
+  }
+
+  //NUMERICAL KEY
+  if (key=='1') {
+    //Proscene - Camera Route #1
+
+  } else if (key=='2') {
+    //Proscene - Camera Route #2
+  } else if (key=='3') {
+    //Proscene - Camera Route #3
+  } else if (key=='4') {
+    //introState
+    systemState= State.introState;
+    setupStates();
+  } else if (key=='5') {
+    //ringmindStableState
+    systemState= State.ringmindState;
+    setupStates();
+  } else if (key=='%') {
+    //Unstable Ringmind State
+    systemState= State.ringmindUnstableState;
+    setupStates();
+  } else if (key=='6') {
+    //connectedState
+    systemState= State.connectedState;
+    setupStates();
+  } else if (key=='7') {
+    //saturnState
+    systemState= State.saturnState;
+    setupStates();
+  } else if (key=='8') {
+    //shearState
+    systemState= State.shearState;
+    setupStates();
+  } else if (key=='*') {
+    //Toggle Moonlet
+    if (s instanceof ShearSystem) {
+      ShearSystem ss = (ShearSystem) s;
+      Moonlet = !Moonlet;
+    }
+  } else if (key=='9') {
+    //TiltSystem
+    systemState= State.formingState;
+    setupStates();
+  } else if (key=='0') {
+    systemState= State.ringboarderState;
+    setupStates();
+  } else if (key==')') {
+    systemState= State.addAlienLettersState;
+    setupStates();
+  } else if (key=='-') {
+    systemState= State.threadingState;
+    setupStates();
+  } else if (key== '=') {
+    systemState= State.resonanceState;
+    setupStates();
+  }
+
+  //----------------------------TOP ROW QWERTYUIOP[]------------------------------------------------
+
+  if (key=='q') {
+
+  } else if (key=='Q') {
+    //
+  } else if (key=='w') {
+
+  } else if (key=='W') {
+    //
+  } else if (key=='e') {
+
+    //Proscene -
+  } else if (key=='E') {
+    //
+  } else if (key=='r') {
+    //Proscene - Show Camera Path
+  } else if (key=='R') {
+
+  } else if (key=='t') {
+
+  } else if (key=='T') {
+    //
+  } else if (key=='y') {
+
+  } else if (key=='Y') {
+    //
+  } else if (key=='u') {
+
+  } else if (key=='U') {
+    //
+  } else if (key=='i') {
+
+  } else if (key=='I') {
+    //
+  } else if (key=='o') {
+
+  } else if (key=='O') {
+    //
+  } else if (key=='p') {
+
+  } else if (key=='P') {
+    //
+  } else if (key=='[') {
+
+  } else if (key==']') {
+
+  }
+
+  //---------------------------SECOND ROW ASDFGHJKL--------------------------------------------
+
+  if (key == 'a') {
+    //Proscene - 3 Axis Markers
+  } else if (key == 'A') {
+    useAdditiveBlend = !useAdditiveBlend;
+  } else if (key=='s') {
+    //Proscene - Fill Screen
+  } else if (key=='S') {
+    //Release to Save Path to JSON
+  } else if (key=='d') {
+    if (s instanceof ShearSystem) {
+      ShearSystem ss = (ShearSystem)s;
+      ss.Guides= !ss.Guides;
+    } else {
+      traceAmount=190;
+    }
+  } else if (key=='D') {
+    //
+  } else if (key=='f') {
+    useFilters=!useFilters;
+  } else if (key=='F') {
+    //
+  } else if (key=='g') {
+    systemState= State.fadeup; //fade up all particles
+    //Proscene - Grid Square
+  } else if (key=='G') {
+    //
+  } else if (key=='h') {
+    systemState= State.fadetoblack; //fadeout all particles from everything
+  } else if (key=='H') {
+    //
+  } else if (key=='j') {
+    useTrace = !useTrace;
+  } else if (key=='J') {
+    //
+  } else if (key=='k') {
+    videoExportRecording = !videoExportRecording;
+    //
+  } else if (key=='k') {
+    //
+  } else if (key=='l') {
+    //
+  } else if (key=='L') {
+    //
+  }
+
+  //---------------------------THIRD ROW ZXCVBNM--------------------------------------------
+
+  if (key=='z') {
+    //
+  } else if (key=='Z') {
+    //
+  } else if (key=='x') {
+    //
+  } else if (key=='X') {
+    //
+  } else if (key=='c') {
+    //oscRingDensity(Saturn);
+    //oscRingRotationRate(Saturn);
+  } else if (key=='C') {
+    //
+  } else if (key=='v') {
+    saveFrame("./screenshots/ringmind_screen-###.jpg");
+  } else if (key=='V') {
+    //
+  } else if (key=='b') {
+    //
+  } else if (key=='B') {
+    //
+  } else if (key=='n') {
+    //
+  } else if (key=='N') {
+    //
+  } else if (key=='m') {
+    ////turn on this alogorithm to send tony the data
+    //MoonAlignment = !MoonAlignment;
+  } else if (key=='M') {
+    //
+  }
+}
+
+//-------------------------------
+public void keyReleased() {
+  //if you edit the camera pathways be sure to save them !!!!
+  if (key=='S') {
+
+    println("camera pathways saved");
+  }
+}
+
+//---------------------------- MOUSE -----------------------------------------------------------------------
+
+public void mouseReleased() {
+  //lets debug print all the camera stuff to help figure out what data we need for each scene
+  //println("****** camera debug info ******");
+  //println();
+  //println("camera orientation");
+  //Rotation r = scene.camera().frame().orientation();
+  //r.print();
+  //println();
+  //println("camera position");
+  //println(scene.camera().position());
+  //println();
+  //println("view direction");
+  //println(scene.camera().viewDirection());
+  println("Released");
+}
+
+public void mousePressed(){
+	
+	println("Pressed");
+
+}
+
+
+/* =========================================================================================================================
+*
+* Video export code
+*
+* =========================================================================================================================
+*/
+
+/**
+* Sets up the VideoExport object to record a movie to disc.
+*/
+void setupExport() {
+  videoExport = new VideoExport(this, videoExportFilename);
+  videoExport.setFrameRate(20);
+  videoExport.startMovie();
+}
+/**
+* Save a video frame to the file.
+*/
+void drawMovie(){
+  videoExport.saveFrame();
+}

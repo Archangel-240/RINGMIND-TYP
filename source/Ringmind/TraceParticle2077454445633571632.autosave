@@ -1,0 +1,31 @@
+//------------------------------------TRACE PARTICLE--------------------------------------------
+
+class TraceParticle extends Particle {
+
+    PVector InitPosition = new PVector();
+
+    //ShearParticle Properties
+    float InitRadius;
+    float radius;
+
+    // Modifies the minimum radius and range of radii each particle can have
+    float m;
+
+    TraceParticle(ShearParticle sp){
+        position = sp.position;
+        velocity = new PVector();
+        acceleration = new PVector();
+        InitPosition = sp.InitPosition;
+        //
+        this.InitRadius = 1;
+        this.radius = 1;
+        this.m = 0;
+    }
+
+    
+    Particle clone() {
+      
+        return this;
+    }
+
+}
